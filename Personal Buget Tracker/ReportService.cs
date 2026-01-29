@@ -33,9 +33,9 @@ namespace Personal_Budget_Tracker
             );
             var netSavings = totalIncome - totalExpenses;
             Console.WriteLine($"Monthly Summary for {month}/{year}:");
-            Console.WriteLine($"Total Income:       {totalIncome} EUR");
-            Console.WriteLine($"Total Expenses:     {totalExpenses} EUR");
-            Console.WriteLine($"Net Savings:        {netSavings} EUR");
+            Console.WriteLine($"Total Income:       {totalIncome:C}");
+            Console.WriteLine($"Total Expenses:     {totalExpenses:C}");
+            Console.WriteLine($"Net Savings:        {netSavings:C}");
         }
         public void DisplayExpensesByCategory()
         {
@@ -58,7 +58,7 @@ namespace Personal_Budget_Tracker
             Console.WriteLine("Expenses by Category:");
             foreach (var group in groupedExpenses)
             {
-                Console.WriteLine($"{group.Category}: {group.Total} EUR");
+                Console.WriteLine($"{group.Category}: {group.Total:C}");
             }
         }
         public void DisplayReportByDateRange(DateTime startDate, DateTime endDate)
@@ -70,9 +70,9 @@ namespace Personal_Budget_Tracker
             var totalExpenses = expenseManager.GetTotalExpensesByDateRange(startDate, endDate);
             var netBalance = totalIncome - totalExpenses;
             Console.WriteLine($"Report from     {startDate:d} to {endDate:d}:");
-            Console.WriteLine($"Total Income:   {totalIncome} EUR");
-            Console.WriteLine($"Total Expenses: {totalExpenses} EUR");
-            Console.WriteLine($"Net Balance:    {netBalance} EUR");
+            Console.WriteLine($"Total Income:   {totalIncome:C}");
+            Console.WriteLine($"Total Expenses: {totalExpenses:C}");
+            Console.WriteLine($"Net Balance:    {netBalance:C}");
         }
         public void DisplayTopSpendingsCategories(int count)
         {
@@ -139,7 +139,7 @@ namespace Personal_Budget_Tracker
             Console.WriteLine("Income by Category");
             foreach (var group in groupedIncomes)
             {
-                Console.WriteLine($"{group.Category.PadRight(20)} {group.Total,10} EUR  ({group.Percentage,5:F1}%)");
+                Console.WriteLine($"{group.Category.PadRight(20)} {group.Total,10:C}  ({group.Percentage,5:F1}%)");
             }
         }
         public void DisplayYearToDateSummary()
@@ -152,9 +152,9 @@ namespace Personal_Budget_Tracker
             var netBalance = totalIncome - totalExpenses;
 
             Console.WriteLine($"Year-to-Date Summary ({startOfYear.Year})");
-            Console.WriteLine($"Total Income:    {totalIncome,12} EUR");
-            Console.WriteLine($"Total Expenses:  {totalExpenses,12} EUR");
-            Console.WriteLine($"Net Balance:     {netBalance,12} EUR");
+            Console.WriteLine($"Total Income:    {totalIncome,12:C}");
+            Console.WriteLine($"Total Expenses:  {totalExpenses,12:C}");
+            Console.WriteLine($"Net Balance:     {netBalance,12:C}");
         }
     }
 }
