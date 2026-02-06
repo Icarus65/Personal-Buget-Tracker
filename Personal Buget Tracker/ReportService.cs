@@ -1,28 +1,24 @@
-﻿using Personal_Budget_Tracker;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Personal_Buget_Tracker;
 
-namespace Personal_Budget_Tracker
+namespace Personal_Buget_Tracker
 {
     public class ReportService
     {
-        private IncomeManager incomeManager;
-        private ExpenseManager expenseManager;
-        public ReportService(IncomeManager incomeMgr, ExpenseManager expenseMgr)
+        private readonly IncomeManager incomeManager;
+        private readonly ExpenseManager expenseManager;
+        public ReportService(BudgetManager budgetManager)
         {
-            incomeManager = incomeMgr;
-            expenseManager = expenseMgr;
+            incomeManager = budgetManager.IncomeManager;
+            expenseManager = budgetManager.ExpenseManager;
         }
-        public void DisplayMonthlySummary(int month, int year)
+        public record MonthlySummary(decimal TotalIncome, decimal TotalExpenses, decimal NetSavings);
+        public MonthlySummary GetMonthlySummary(int month, int year)
         {
-            if(month < 1 || month > 12)
-                throw new ArgumentException("Invalid month. Please enter a value between 1 and 12.");
-            if(year < 1900 || year > DateTime.Now.Year)
-                throw new ArgumentException("Invalid year. Please enter a valid year.");
-
             var totalIncome = incomeManager.GetTotalIncomeByDateRange(
                 new DateTime(year, month, 1),
                 new DateTime(year, month, DateTime.DaysInMonth(year, month))
@@ -32,36 +28,27 @@ namespace Personal_Budget_Tracker
                 new DateTime(year, month, DateTime.DaysInMonth(year, month))
             );
             var netSavings = totalIncome - totalExpenses;
-            Console.WriteLine($"Monthly Summary for {month}/{year}:");
-            Console.WriteLine($"Total Income:       {totalIncome:C}");
-            Console.WriteLine($"Total Expenses:     {totalExpenses:C}");
-            Console.WriteLine($"Net Savings:        {netSavings:C}");
+            return new MonthlySummary(totalIncome, totalExpenses, netSavings);
         }
-        public void DisplayExpensesByCategory()
+        public record ExpenseCategorySummary(string Category, decimal Total);
+        public List<ExpenseCategorySummary> GetExpenensesByCategory()
         {
             var expenses = expenseManager.GetAllExpenses();
 
             if (!expenses.Any())
-            {
-                Console.WriteLine("No expenses recorded");
-                return;
-            }            
+                return new List<ExpenseCategorySummary>();
 
-            var groupedExpenses = expenses
-                .GroupBy(e => e.Category)
-                .Select(g => new
-                {
-                    Category = g.Key,
-                    Total = g.Sum(e => e.Amount)
-                })
-                .OrderByDescending(g => g.Total);
-            Console.WriteLine("Expenses by Category:");
-            foreach (var group in groupedExpenses)
-            {
-                Console.WriteLine($"{group.Category}: {group.Total:C}");
-            }
+            return expenses
+                .GroupBy(e => e.Category.ToString())
+                .Select(g => new ExpenseCategorySummary(
+                    g.Key,
+                    g.Sum(e => e.Amount)
+                ))
+                .OrderByDescending(g => g.Total)
+                .ToList();
         }
-        public void DisplayReportByDateRange(DateTime startDate, DateTime endDate)
+        public record ReportByDateRange (decimal TotalIncome, decimal TotalExpenses, decimal NetBalance);
+        public ReportByDateRange GetReportByDateRange(DateTime startDate, DateTime endDate)
         {
             if(startDate > endDate)
                 throw new ArgumentException("Start date must be earlier than or equal to end date.");
@@ -69,80 +56,64 @@ namespace Personal_Budget_Tracker
             var totalIncome = incomeManager.GetTotalIncomeByDateRange(startDate, endDate);
             var totalExpenses = expenseManager.GetTotalExpensesByDateRange(startDate, endDate);
             var netBalance = totalIncome - totalExpenses;
-            Console.WriteLine($"Report from     {startDate:d} to {endDate:d}:");
-            Console.WriteLine($"Total Income:   {totalIncome:C}");
-            Console.WriteLine($"Total Expenses: {totalExpenses:C}");
-            Console.WriteLine($"Net Balance:    {netBalance:C}");
+            return new ReportByDateRange(totalIncome, totalExpenses, netBalance);
         }
-        public void DisplayTopSpendingsCategories(int count)
+        public record TopSpendingCategory(string Category, decimal Total);
+        public List<TopSpendingCategory> GetTopSpendingsCategories()
         {
-            if(count <= 0)
-                throw new ArgumentException("Count must be a positive integer.");
-
             var expenses = expenseManager.GetAllExpenses();
 
             if (!expenses.Any())
-            {
-                Console.WriteLine("No expenses recorded");
-                return;
-            }
-            var topCategories = expenses
-                .GroupBy(e => e.Category)
-                .Select(g => new
-                {
-                    Category = g.Key,
-                    Total = g.Sum(e => e.Amount)
-                })
+                return new List<TopSpendingCategory>();
+
+            return expenses
+                .Where(i => i != null)
+                .GroupBy(e => e.Category.ToString() ?? "Uncategorized")
+                .Select(g => new TopSpendingCategory(
+                     g.Key,
+                     g.Sum(e => e.Amount)
+                ))
                 .OrderByDescending(g => g.Total)
-                .Take(count);
-            Console.WriteLine($"Top {count} Spending Categories:");
-            foreach (var category in topCategories)
-            {
-                Console.WriteLine($"{category.Category}: {category.Total} ");
-            }
+                .ToList();
         }
-        public void DisplaySavingsRate()
+        public decimal GetSavingsRate()
         {
             var totalIncome = incomeManager.GetAllIncomes().Sum(i => i.Amount);
             var totalExpenses = expenseManager.GetAllExpenses().Sum(e => e.Amount);
             if (totalIncome == 0)
             {
                 Console.WriteLine("Savings Rate: N/A (No income recorded)");
-                return;
+                return 0;
             }
             var savings = totalIncome - totalExpenses;
-            var savingsRate = (savings / totalIncome) * 100;
-            Console.WriteLine($"Savings Rate: {savingsRate:F2}%");
+            var savingsRate = savings / totalIncome * 100;
+            return savingsRate;
         }
-        public void DisplayIncomesByCategory()
+        public record IncomeByCategory(string Category, decimal Total, decimal Percentage);
+        public List<IncomeByCategory> GetIncomesByCategory()
         {
             var incomes = incomeManager.GetAllIncomes();
 
             if (!incomes.Any())
             {
-                Console.WriteLine("No income recorded.");
-                return;
+                return new List<IncomeByCategory>();
             }
 
             var totalIncome = incomes.Sum(i => i.Amount);
 
-            var groupedIncomes = incomes
-                .GroupBy(i => i.Category)
-                .Select(g => new
-                {
-                    Category = g.Key,
-                    Total = g.Sum(i => i.Amount),
-                    Percentage = (g.Sum(i => i.Amount) / totalIncome) * 100
-                })
-                .OrderByDescending(g => g.Total);
-
-            Console.WriteLine("Income by Category");
-            foreach (var group in groupedIncomes)
-            {
-                Console.WriteLine($"{group.Category.PadRight(20)} {group.Total,10:C}  ({group.Percentage,5:F1}%)");
-            }
+            return incomes
+                .Where(i => i != null)
+                .GroupBy(i => i.Category?.ToString() ?? "Uncategorized")
+                .Select(g => new IncomeByCategory(
+                    g.Key,
+                    g.Sum(i => i.Amount),
+                    g.Sum(i => i.Amount) / totalIncome * 100
+                ))
+                .OrderByDescending(g => g.Total)
+                .ToList();
         }
-        public void DisplayYearToDateSummary()
+        public record YearToDateSummary(decimal TotalIncome, decimal TotalExpenses, decimal NetBalance);
+        public YearToDateSummary GetYearToDateSummary()
         {
             var startOfYear = new DateTime(DateTime.Now.Year, 1, 1);
             var today = DateTime.Now;
@@ -151,10 +122,7 @@ namespace Personal_Budget_Tracker
             var totalExpenses = expenseManager.GetTotalExpensesByDateRange(startOfYear, today);
             var netBalance = totalIncome - totalExpenses;
 
-            Console.WriteLine($"Year-to-Date Summary ({startOfYear.Year})");
-            Console.WriteLine($"Total Income:    {totalIncome,12:C}");
-            Console.WriteLine($"Total Expenses:  {totalExpenses,12:C}");
-            Console.WriteLine($"Net Balance:     {netBalance,12:C}");
+            return new YearToDateSummary(totalIncome, totalExpenses, netBalance);
         }
     }
 }

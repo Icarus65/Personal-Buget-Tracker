@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Personal_Budget_Tracker
+namespace Personal_Buget_Tracker
 {
     public class DataService
     {
@@ -41,8 +41,7 @@ namespace Personal_Budget_Tracker
         {
             try
             {
-                if (!File.Exists(incomesFile))
-                    return new List<Income>();
+                if (!File.Exists(incomesFile)) return new List<Income>();
 
                 string json = File.ReadAllText(incomesFile);
                 return JsonConvert.DeserializeObject<List<Income>>(json) ?? new List<Income>();
@@ -73,7 +72,7 @@ namespace Personal_Budget_Tracker
                     return new List<Expense>();
 
                 string json = File.ReadAllText(expensesFile);
-                return JsonConvert.DeserializeObject<List<Expense>>(json) ?? new List<Expense>(); //budget if else
+                return JsonConvert.DeserializeObject<List<Expense>>(json) ?? new List<Expense>();
             }
             catch (Exception ex)
             {

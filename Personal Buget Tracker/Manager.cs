@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace Personal_Budget_Tracker
+namespace Personal_Buget_Tracker
 {
     public class IncomeManager
     {
         private List<Income> incomes = new List<Income>();
         private int nextId;
         private DataService dataService;
+
         public IncomeManager(DataService dataService)
         {
             this.dataService = dataService;
@@ -48,31 +49,24 @@ namespace Personal_Budget_Tracker
             SaveData();
         }
 
-        public bool EditIncome(int id, Income updatedIncome)
+        public void UpdateIncome(Income income)
         {
-            var income = incomes.FirstOrDefault(i => i.Id == id);
-            if (income == null)
-                return false;
-
-            ValidateIncome(updatedIncome);
-            ValidateDate(updatedIncome.Date);
-
-            income.Amount = updatedIncome.Amount;
-            income.Date = updatedIncome.Date;
-            income.Description = updatedIncome.Description;
-            income.Category = updatedIncome.Category;
+            var existing = incomes.FirstOrDefault(i => i.Id == income.Id);
+            if (existing != null)
+            {
+                existing.Description = income.Description;
+                existing.Amount = income.Amount;
+                existing.Date = income.Date;
+                existing.Category = income.Category;
+            }
             SaveData();
-            return true;
         }
-        public bool DeleteIncome(int id)
+        public void DeleteIncome(int id)
         {
             var income = incomes.FirstOrDefault(i => i.Id == id);
-            if (income == null)
-                return false;
-
-            incomes.Remove(income);
+            if (income != null)
+                incomes.Remove(income);
             SaveData();
-            return true;
         }
 
         public List<Income> GetAllIncomes()
@@ -94,10 +88,6 @@ namespace Personal_Budget_Tracker
                 .Where(i => i.Date >= startDate && i.Date <= endDate)
                 .Sum(i => i.Amount);
         }
-        public List<Income> GetIncomesByCategory(string category)
-        {
-            return incomes.Where(i => i.Category.Equals(category, StringComparison.OrdinalIgnoreCase)).ToList();
-        }
 
         private void ValidateIncome(Income income)
         {
@@ -109,7 +99,7 @@ namespace Personal_Budget_Tracker
             {
                 throw new ArgumentException("Income description cannot be empty.");
             }
-            if (string.IsNullOrWhiteSpace(income.Category))
+            if (string.IsNullOrWhiteSpace(income.Category.ToString()))
             {
                 throw new ArgumentException("Income category cannot be empty.");
             }
@@ -127,6 +117,7 @@ namespace Personal_Budget_Tracker
         private List<Expense> expenses = new List<Expense>();
         private int nextId;
         private DataService dataService;
+
         public ExpenseManager(DataService dataService)
         {
             this.dataService = dataService;
@@ -144,6 +135,7 @@ namespace Personal_Budget_Tracker
                 if (nextId <= maxId)
                     nextId = maxId + 1;
             }
+            SaveData();
         }
         private void SaveData()
         {
@@ -162,39 +154,28 @@ namespace Personal_Budget_Tracker
             expenses.Add(expense);
             SaveData();
         }
-        public bool EditExpense(int id, Expense updatedExpense)
+        public void UpdateExpense(Expense expense)
         {
-            var expense = expenses.FirstOrDefault(e => e.Id == id);
-            if (expense == null)
-                return false;
-
-            ValidateExpense(updatedExpense);
-            ValidateDate(updatedExpense.Date);
-
-            expense.Amount = updatedExpense.Amount;
-            expense.Date = updatedExpense.Date;
-            expense.Description = updatedExpense.Description;
-            expense.Category = updatedExpense.Category;
+            var existing = expenses.FirstOrDefault(e => e.Id == expense.Id);
+            if (existing != null)
+            {
+                existing.Description = expense.Description;
+                existing.Amount = expense.Amount;
+                existing.Date = expense.Date;
+                existing.Category = expense.Category;
+            }
             SaveData();
-            return true;
         }
-        public bool DeleteExpense(int id)
+        public void DeleteExpense(int id)
         {
             var expense = expenses.FirstOrDefault(e => e.Id == id);
-            if (expense == null)
-                return false;
-
-            expenses.Remove(expense);
+            if (expense != null)
+                expenses.Remove(expense);
             SaveData();
-            return true;
         }
         public List<Expense> GetAllExpenses()
         {
             return new List<Expense>(expenses);
-        }
-        public Expense GetExpenseById(int id)
-        {
-            return expenses.FirstOrDefault(e => e.Id == id);
         }
         public decimal GetTotalExpenses()
         {
@@ -208,12 +189,12 @@ namespace Personal_Budget_Tracker
         }
         public List<Expense> GetExpensesByCategory(string category)
         {
-            return expenses.Where(e => e.Category.Equals(category, StringComparison.OrdinalIgnoreCase)).ToList();
+            return expenses.Where(e => e.Category.ToString().Equals(category, StringComparison.OrdinalIgnoreCase)).ToList();
         }
         public Dictionary<string, decimal> GetExpenseBreakdownByCategory()
         {
             return expenses
-                .GroupBy(e => e.Category)
+                .GroupBy(e => e.Category.ToString())
                 .ToDictionary(g => g.Key, g => g.Sum(e => e.Amount));
         }
         private void ValidateExpense(Expense expense)
@@ -226,7 +207,7 @@ namespace Personal_Budget_Tracker
             {
                 throw new ArgumentException("Expense description cannot be empty.");
             }
-            if (string.IsNullOrWhiteSpace(expense.Category))
+            if (string.IsNullOrWhiteSpace(expense.Category.ToString()))
             {
                 throw new ArgumentException("Expense category cannot be empty.");
             }
@@ -241,8 +222,13 @@ namespace Personal_Budget_Tracker
     }
     public class BudgetManager
     {
-        private IncomeManager incomeManager;
-        private ExpenseManager expenseManager;
+        private IncomeManager incomeManager { get; }
+        private ExpenseManager expenseManager { get; }
+        public static class CategoryRepository
+        {
+            public static readonly string[] IncomeCategories = { "Salary", "Gift", "Investment", "Other" };
+            public static readonly string[] ExpenseCategories = { "Food", "Rent", "Utilities", "Entertainment", "Other" };
+        }
         public BudgetManager()
         {
             DataService dataService = new DataService();
@@ -267,10 +253,6 @@ namespace Personal_Budget_Tracker
             decimal totalExpenses = expenseManager.GetTotalExpenses();
             decimal netBalance = GetNetBalance();
 
-            Console.WriteLine("Budget Summary");
-            Console.WriteLine($"Total Income:   {totalIncome:N2:C}");
-            Console.WriteLine($"Total Expenses: {totalExpenses:N2:C}");
-            Console.WriteLine($"Net Balance:    {netBalance:N2:C}"); 
         }
     }
 }
