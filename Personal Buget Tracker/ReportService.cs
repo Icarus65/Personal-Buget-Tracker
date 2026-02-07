@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Personal_Buget_Tracker;
-
-namespace Personal_Buget_Tracker
+﻿namespace Personal_Buget_Tracker
 {
     public class ReportService
     {
@@ -82,7 +75,6 @@ namespace Personal_Buget_Tracker
             var totalExpenses = expenseManager.GetAllExpenses().Sum(e => e.Amount);
             if (totalIncome == 0)
             {
-                Console.WriteLine("Savings Rate: N/A (No income recorded)");
                 return 0;
             }
             var savings = totalIncome - totalExpenses;

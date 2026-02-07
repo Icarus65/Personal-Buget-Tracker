@@ -1,14 +1,4 @@
 ﻿using Personal_Buget_Tracker;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MyApp.Gui
 {
@@ -52,6 +42,7 @@ namespace MyApp.Gui
         private void DisplayMonthlySummaryGUI()
         {
             listView1.Clear();
+            dateTimePicker1.Show();
             dateTimePicker2.Hide();
             int month = dateTimePicker1.Value.Month;
             int year = dateTimePicker1.Value.Year;
@@ -122,6 +113,8 @@ namespace MyApp.Gui
         private void SavingsRateReportGUI()
         {
             listView1.Clear();
+            dateTimePicker1.Hide();
+            dateTimePicker2.Hide();
 
             var savingsRate = _reportService.GetSavingsRate();
             label5.Text = $"Savings Rate: {savingsRate:F2}%";
@@ -154,14 +147,11 @@ namespace MyApp.Gui
 
         private void YearToDateSummaryReport()
         {
+            dateTimePicker2.Hide();
+            dateTimePicker2.Hide();
             var time = dateTimePicker1.Value;
             var data = _reportService.GetYearToDateSummary();
             listView1.Clear();
-
-            if (DateTime.Now < time)
-                MessageBox.Show("Date cannot be in the future.");
-            if (time.Year != DateTime.Now.Year)
-                MessageBox.Show("Date must be within the current year.");
             label5.Text = $"Year to Date Summary:\nTotal Income: {data.TotalIncome:C}\nTotal Expenses: {data.TotalExpenses:C}\nNet Savings: {data.NetBalance:C}";
         }
 
@@ -198,6 +188,39 @@ namespace MyApp.Gui
         private void dateTimePicker1_ValueChanged(object sender, EventArgs e)
         {
             if(comboBox1.SelectedItem == null)
+                return;
+
+            switch (comboBox1.SelectedItem?.ToString())
+            {
+                case "Monthly Summary":
+                    DisplayMonthlySummaryGUI();
+                    break;
+                case "Report by date range":
+                    ReportByDateRangeGUI();
+                    break;
+                case "Expenses by category":
+                    ExpensesByCategoryReportGUI();
+                    break;
+                case "Top spending categories":
+                    TopSpendingCategoriesReportGUI();
+                    break;
+                case "Savings rate":
+                    SavingsRateReportGUI();
+                    break;
+                case "Income by category":
+                    IncomeByCategoryReportGUI();
+                    break;
+                case "Year to date summary":
+                    YearToDateSummaryReport();
+                    break;
+                default:
+                    MessageBox.Show("Please select a valid report type.");
+                    break;
+            }
+        }
+        private void dateTimePicker2_ValueChanged(object sender, EventArgs e)
+        {
+            if (comboBox1.SelectedItem == null)
                 return;
 
             switch (comboBox1.SelectedItem?.ToString())

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-
-namespace Personal_Buget_Tracker
+﻿namespace Personal_Buget_Tracker
 {
     public class IncomeManager
     {

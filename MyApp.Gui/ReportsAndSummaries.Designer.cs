@@ -81,6 +81,7 @@
             dateTimePicker2.Name = "dateTimePicker2";
             dateTimePicker2.Size = new Size(200, 23);
             dateTimePicker2.TabIndex = 4;
+            dateTimePicker2.ValueChanged += dateTimePicker2_ValueChanged;
             // 
             // label2
             // 

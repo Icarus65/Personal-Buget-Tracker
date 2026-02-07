@@ -1,7 +1,4 @@
 ﻿using Personal_Buget_Tracker;
-using System;
-using System.Linq;
-using System.Windows.Forms;
 
 namespace MyApp.Gui
 {

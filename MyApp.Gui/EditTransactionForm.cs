@@ -1,7 +1,4 @@
 ﻿using Personal_Buget_Tracker;
-using System;
-using System.Linq;
-using System.Windows.Forms;
 using static Personal_Buget_Tracker.BudgetManager;
 
 namespace MyApp.Gui
@@ -59,14 +56,12 @@ namespace MyApp.Gui
 
         private void btnSave_Click(object sender, EventArgs e)
         {
-            // Validate description
             if (string.IsNullOrWhiteSpace(txtDescription.Text))
             {
                 MessageBox.Show("Please enter a description.");
                 return;
             }
 
-            // Validate amount
             if (!decimal.TryParse(txtAmount.Text, out decimal amount))
             {
                 MessageBox.Show("Please enter a valid amount.");
